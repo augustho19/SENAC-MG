@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GamerHub | Login Arena</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="logo">G<span>HUB</span></div>
+            <h2 style="margin-bottom:10px">ACESSO RESTRITO</h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">Insira suas credenciais para entrar</p>
+            <input type="text" id="nickname" placeholder="Nickname do Jogador">
+            <input type="password" id="password" placeholder="Senha de Acesso">
+            <button class="btn-action" onclick="app.login()">ENTRAR NA ARENA</button>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="logo">G<span>HUB</span></div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="app.showTab('games', event)">🎮 Arena</div>
+            <div class="nav-item" onclick="app.showTab('profile', event)">👤 Perfil</div>
+            <div class="nav-item" onclick="app.showTab('contact', event)">📩 Suporte</div>
+            <div class="nav-item logout" onclick="app.logout()">🚪 Sair</div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <section id="games" class="active">
+            <h1>Jogos Disponíveis</h1>
+            <div id="catalog" class="game-grid" style="margin-top:20px">
+                <div class="game-card" onclick="app.play('snake')"><h2>🐍</h2><h3>Snake</h3><p>Recorde: <span id="rec-snake">0</span></p></div>
+                <div class="game-card" onclick="app.play('memory')"><h2>🧠</h2><h3>Memória</h3><p>Recorde: <span id="rec-memory">0</span></p></div>
+                <div class="game-card" onclick="app.play('mole')"><h2>🔨</h2><h3>Toupeira</h3><p>Recorde: <span id="rec-mole">0</span></p></div>
+            </div>
+
+            <div id="arena">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <button onclick="app.exit()" style="background:#f43f5e; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">⬅ SAIR</button>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">PONTOS: <span id="score">0</span></div>
+                </div>
+                <canvas id="canvas" width="400" height="400"></canvas>
+                <div id="html-engine"></div>
+            </div>
+        </section>
+
+        <section id="profile">
+            <div class="glass-panel">
+                <h1 id="p-username" style="color: var(--primary)">Jogador</h1>
+                <div style="margin-top: 20px">
+                    <p>Nível: <span id="p-level">1</span></p>
+                    <div class="xp-bar"><div id="xp-fill"></div></div>
+                    <p>XP: <span id="p-xp">0</span>/100</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <div class="glass-panel">
+                <h2>Suporte</h2>
+                <div class="contact-grid">
+                    <div class="contact-item"><strong>WhatsApp:</strong><br>(11) 99999-9999</div>
+                    <div class="contact-item"><strong>E-mail:</strong><br>suporte@ghub.com</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
