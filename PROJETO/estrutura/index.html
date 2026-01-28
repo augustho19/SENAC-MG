@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade OS v3.0 - Full Edition</title>
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #05070a;
+            --sidebar: #0f111a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #e2e8f0;
+            --danger: #ff4757;
+        }
+
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); 
+            margin: 0; display: flex; height: 100vh; overflow: hidden; 
+        }
+
+        /* --- TELA DE LOGIN --- */
+        #login-screen { 
+            position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; 
+            background: radial-gradient(circle at center, #1e1b4b, #05070a);
+        }
+        .login-box { 
+            background: var(--sidebar); padding: 40px; border-radius: 24px; text-align: center; width: 340px; 
+            border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* --- ESTRUTURA PRINCIPAL --- */
+        #main-app { display: none; width: 100%; height: 100%; flex-direction: row; }
+        
+        .sidebar { 
+            width: 260px; background: var(--sidebar); display: flex; flex-direction: column; 
+            padding: 30px 20px; border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar h2 { font-size: 1.5rem; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 40px; text-align: center; }
+
+        .nav-btn { 
+            background: transparent; border: none; color: #94a3b8; padding: 14px 20px; 
+            text-align: left; cursor: pointer; border-radius: 12px; margin-bottom: 8px; 
+            font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-btn:hover, .nav-btn.active { background: var(--glass); color: var(--primary); }
+        .logout-btn { margin-top: auto; color: var(--danger); }
+
+        /* --- CONTEÚDO E ABAS --- */
+        .content { flex: 1; padding: 40px; display: flex; justify-content: center; align-items: center; overflow-y: auto; position: relative; }
+        .tab-section { display: none; width: 100%; max-width: 500px; animation: fadeIn 0.4s; }
+        .tab-section.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- GAME CONTAINER & MENUS --- */
+        .game-viewport { 
+            position: relative; width: 400px; height: 500px; background: #000; 
+            border-radius: 20px; border: 2px solid var(--glass); overflow: hidden;
+        }
+        canvas { width: 100%; height: 100%; }
+
+        .overlay {
+            position: absolute; inset: 0; background: rgba(10, 11, 20, 0.9);
+            z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px); text-align: center;
+        }
+        .hidden { display: none !important; }
+
+        /* --- COMPONENTES UI --- */
+        .btn-ui { 
+            background: linear-gradient(45deg, var(--secondary), var(--primary)); 
+            border: none; padding: 12px 24px; border-radius: 10px; color: white; 
+            font-weight: bold; cursor: pointer; text-transform: uppercase; margin: 10px;
+        }
+        .btn-ui:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,242,255,0.4); }
+        
+        .input-ui { width: 100%; padding: 12px; background: #05070a; border: 1px solid var(--glass); border-radius: 8px; color: white; margin: 10px 0; }
+
+        .avatar-circle { width: 120px; height: 120px; border: 3px solid var(--primary); border-radius: 50%; margin: 0 auto 20px; overflow: hidden; background: #1a1a1a; }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        #memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 320px; margin: 0 auto; }
+        .tile { aspect-ratio: 1/1; background: var(--glass); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .tile.flipped { background: var(--primary); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>ARCADE.OS</h1>
+            <input type="text" id="log-user" class="input-ui" placeholder="Usuário">
+            <input type="password" id="log-pass" class="input-ui" placeholder="Senha">
+            <button class="btn-ui" style="width: 100%" onclick="login()">Entrar</button>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <nav class="sidebar">
+            <h2 id="display-nick">PLAYER 1</h2>
+            <button class="nav-btn active" onclick="showTab('tab-carro', this)">🏎️ Corrida</button>
+            <button class="nav-btn" onclick="showTab('tab-tiro', this)">🎯 Tiro</button>
+            <button class="nav-btn" onclick="showTab('tab-memoria', this)">🧠 Memória</button>
+            <button class="nav-btn" onclick="showTab('tab-perfil', this)">👤 Perfil</button>
+            <button class="nav-btn logout-btn" onclick="location.reload()">🚪 Sair</button>
+        </nav>
+
+        <main class="content">
+            <div id="tab-carro" class="tab-section active">
+                <div class="game-viewport">
+                    <div id="menu-car" class="overlay">
+                        <h1>CORRIDA</h1>
+                        <button class="btn-ui" onclick="initGame('car')">COMEÇAR</button>
+                    </div>
+                    <canvas id="carCanvas"></canvas>
+                </div>
+            </div>
+
+            <div id="tab-tiro" class="tab-section">
+                <div class="game-viewport">
+                    <div id="menu-shoot" class="overlay">
+                        <h1>TIRO AO ALVO</h1>
+                        <button class="btn-ui" onclick="initGame('shoot')">COMEÇAR</button>
+                    </div>
+                    <canvas id="shootCanvas"></canvas>
+                </div>
+            </div>
+
+            <div id="tab-memoria" class="tab-section">
+                <div class="game-viewport">
+                    <div id="menu-mem" class="overlay">
+                        <h1>MEMÓRIA</h1>
+                        <button class="btn-ui" onclick="initGame('mem')">COMEÇAR</button>
+                    </div>
+                    <div id="memory-grid" style="padding-top: 50px;"></div>
+                </div>
+            </div>
+
+            <div id="tab-perfil" class="tab-section">
+                <div style="background: var(--sidebar); padding: 40px; border-radius: 20px; text-align: center;">
+                    <div class="avatar-circle" id="preview-avatar"></div>
+                    <input type="file" id="file-photo" hidden onchange="uploadPhoto(this)">
+                    <button class="btn-ui" style="font-size: 0.7rem;" onclick="document.getElementById('file-photo').click()">Alterar Foto</button>
+                    <input type="text" id="nick-input" class="input-ui" placeholder="Novo Apelido">
+                    <button class="btn-ui" onclick="saveProfile()">Salvar Dados</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    let currentLoop;
+    let score = 0;
+
+    // LOGIN
+    function login() {
+        if(document.getElementById('log-user').value === "admin") {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+        }
+    }
+
+    // NAVEGAÇÃO
+    function showTab(id, btn) {
+        cancelAnimationFrame(currentLoop);
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // PERFIL
+    function uploadPhoto(input) {
+        const reader = new FileReader();
+        reader.onload = (e) => document.getElementById('preview-avatar').innerHTML = `<img src="${e.target.result}">`;
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    function saveProfile() {
+        const nick = document.getElementById('nick-input').value;
+        if(nick) document.getElementById('display-nick').innerText = nick.toUpperCase();
+        alert("Perfil Atualizado!");
+    }
+
+    // GERENCIADOR DE JOGOS
+    function initGame(type) {
+        document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+        if(type === 'car') carGame();
+        if(type === 'shoot') shootGame();
+        if(type === 'mem') memGame();
+    }
+
+    // --- CARRO ---
+    function carGame() {
+        const cvs = document.getElementById('carCanvas'); const ctx = cvs.getContext('2d');
+        cvs.width = 400; cvs.height = 500;
+        let x = 180, obsY = -50, obsX = 180, pts = 0;
+        function loop() {
+            ctx.fillStyle = "#000"; ctx.fillRect(0,0,400,500);
+            ctx.fillStyle = "#00f2ff"; ctx.fillRect(x, 420, 40, 60); // Carro
+            ctx.fillStyle = "red"; ctx.fillRect(obsX, obsY, 40, 60); // Obstáculo
+            obsY += 6;
+            if(obsY > 500) { obsY = -60; obsX = Math.random()*340; pts++; }
+            if(obsY > 360 && obsY < 480 && Math.abs(x - obsX) < 35) {
+                document.getElementById('menu-car').classList.remove('hidden'); return;
+            }
+            cvs.onmousemove = (e) => x = e.offsetX - 20;
+            currentLoop = requestAnimationFrame(loop);
+        }
+        loop();
+    }
+
+    // --- TIRO ---
+    function shootGame() {
+        const cvs = document.getElementById('shootCanvas'); const ctx = cvs.getContext('2d');
+        cvs.width = 400; cvs.height = 500;
+        let target = { x: 200, y: 200, r: 25 };
+        function draw() {
+            ctx.fillStyle = "#05070a"; ctx.fillRect(0,0,400,500);
+            ctx.beginPath(); ctx.arc(target.x, target.y, target.r, 0, Math.PI*2);
+            ctx.fillStyle = "red"; ctx.fill();
+            ctx.strokeStyle = "white"; ctx.stroke();
+        }
+        cvs.onclick = (e) => {
+            if(Math.hypot(e.offsetX - target.x, e.offsetY - target.y) < target.r) {
+                target.x = Math.random()*350+25; target.y = Math.random()*450+25;
+                draw();
+            }
+        };
+        draw();
+    }
+
+    // --- MEMÓRIA ---
+    function memGame() {
+        const grid = document.getElementById('memory-grid'); grid.innerHTML = '';
+        const icons = ['🔥','🔥','👾','👾','🚀','🚀','⚡','⚡'];
+        let flipped = [];
+        icons.sort(() => Math.random()-0.5).forEach(icon => {
+            const t = document.createElement('div'); t.className = 'tile'; t.dataset.v = icon;
+            t.onclick = () => {
+                if(flipped.length < 2 && !t.classList.contains('flipped')) {
+                    t.innerText = icon; t.classList.add('flipped'); flipped.push(t);
+                    if(flipped.length === 2) {
+                        setTimeout(() => {
+                            if(flipped[0].dataset.v !== flipped[1].dataset.v) {
+                                flipped.forEach(f => { f.innerText = ''; f.classList.remove('flipped'); });
+                            }
+                            flipped = [];
+                        }, 500);
+                    }
+                }
+            };
+            grid.appendChild(t);
+        });
+    }
+</script>
+</body>
+</html>
