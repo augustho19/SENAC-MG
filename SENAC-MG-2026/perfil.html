@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Perfil</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo" style="margin-top:40px">LEXUS<span>GAMES</span></div>
+        <ul>
+            <li class="nav-item" onclick="location.href='index.html'"><i class="fas fa-gamepad"></i> Jogos</li>
+            <li class="nav-item active"><i class="fas fa-user"></i> Perfil</li>
+        </ul>
+    </nav>
+    <main class="content" id="main-content">
+        <h1>Meu Perfil</h1>
+        <div class="card-box" style="max-width:400px; margin-top:30px">
+            <img id="profile-preview" src="">
+            <input type="file" id="file-input" hidden accept="image/*">
+            <button class="btn-neon" onclick="document.getElementById('file-input').click()">ESCOLHER FOTO</button>
+            <input type="text" id="username-input" placeholder="Nickname">
+            <button class="btn-neon" onclick="saveData()">SALVAR</button>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

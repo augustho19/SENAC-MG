@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Contato</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo" style="margin-top:40px">LEXUS<span>GAMES</span></div>
+        <ul>
+            <li class="nav-item" onclick="location.href='index.html'"><i class="fas fa-gamepad"></i> Jogos</li>
+            <li class="nav-item active"><i class="fas fa-envelope"></i> Contato</li>
+        </ul>
+    </nav>
+    <main class="content" id="main-content">
+        <h1>Suporte</h1>
+        <div class="card-box" style="max-width:500px; margin-top:20px">
+            <input type="text" placeholder="Assunto">
+            <textarea placeholder="Sua mensagem..." style="height:150px"></textarea>
+            <button class="btn-neon" onclick="alert('Enviado!')">ENVIAR TICKET</button>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

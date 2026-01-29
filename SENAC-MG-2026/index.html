@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Lexus Games | Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo" style="margin-top:40px">LEXUS<span>GAMES</span></div>
+        <ul>
+            <li class="nav-item active" onclick="location.href='index.html'"><i class="fas fa-gamepad"></i> Jogos</li>
+            <li class="nav-item" onclick="location.href='perfil.html'"><i class="fas fa-user"></i> Perfil</li>
+            <li class="nav-item" onclick="location.href='ajustes.html'"><i class="fas fa-cog"></i> Ajustes</li>
+            <li class="nav-item" onclick="location.href='contato.html'"><i class="fas fa-envelope"></i> Contato</li>
+            <li class="nav-item" onclick="location.href='login.html'"><i class="fas fa-power-off"></i> Sair</li>
+        </ul>
+    </nav>
+    <main class="content" id="main-content">
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px">
+            <h1>Biblioteca</h1>
+            <div style="display:flex; align-items:center; gap:10px">
+                <span id="nav-username"></span><img id="nav-avatar" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--primary)">
+            </div>
+        </header>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:25px">
+            <div class="card-box">
+                <div style="height:150px; background:url('https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400'); border-radius:10px; background-size:cover"></div>
+                <h3 style="margin:15px 0">Block Dash</h3>
+                <button class="btn-neon" onclick="location.href='jogo1.html'">JOGAR</button>
+            </div>
+            <div class="card-box">
+                <div style="height:150px; background:url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400'); border-radius:10px; background-size:cover"></div>
+                <h3 style="margin:15px 0">Clicker Neon</h3>
+                <button class="btn-neon" onclick="location.href='jogo2.html'">JOGAR</button>
+            </div>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
