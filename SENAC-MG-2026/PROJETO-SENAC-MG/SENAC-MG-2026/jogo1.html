@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Web</title>
+    <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Block Dash</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; flex-direction:column; height:100vh; overflow:hidden">
+    <a href="index.html" class="btn-voltar">VOLTAR AO MENU</a>
+</body>
+</html>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        
+        #crosshair { 
+            position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; 
+            border: 2px solid #00ff00; border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 10;
+        }
+
+        #ui { 
+            position: absolute; bottom: 30px; left: 30px; color: #00ff00; 
+            font-size: 28px; font-weight: bold; z-index: 10; text-shadow: 2px 2px #000; 
+        }
+
+        #exit-btn {
+            position: absolute; top: 20px; right: 20px; 
+            padding: 12px 24px; background: #d13639; color: white; 
+            border: none; border-radius: 4px; cursor: pointer; 
+            z-index: 1001; font-weight: bold; font-size: 14px;
+            transition: 0.3s;
+        }
+        #exit-btn:hover { background: #ff464a; transform: scale(1.05); }
+
+        #instructions {
+            position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white; 
+            background: rgba(0,0,0,0.85); z-index: 100; cursor: pointer; text-align: center;
+        }
+
+        #game-over {
+            display: none; position: absolute; width: 100%; height: 100%;
+            background: #000; color: #d13639; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-over">
+        <h1>JOGO ENCERRADO</h1>
+        <button onclick="location.reload()" style="padding: 10px; cursor: pointer;">REINICIAR</button>
+    </div>
+
+    <button id="exit-btn" onclick="encerrarJogo()">SAIR DO JOGO</button>
+    <div id="crosshair"></div>
+    <div id="ui">KILLS: <span id="score">0</span></div>
+    
+    <div id="instructions">
+        <h1 style="font-size: 48px; color: #d13639;">PRONTO?</h1>
+        <p>CLIQUE PARA INICIAR</p>
+        <p style="margin-top: 20px; color: #888;">WASD: Mover | MOUSE: Atirar | ESPAÇO: Pular | ESC: Pausar</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        let score = 0;
+        let gameRunning = true;
+        let animationId;
+        const bullets = [];
+        const targets = [];
+        const keys = {};
+        
+        // FÍSICA E CÂMERA
+        let velocidadeVertical = 0;
+        const gravidade = 0.008;
+        const forcaPulo = 0.18;
+        let noChao = true;
+        const alturaOlhos = 1.6;
+
+        function encerrarJogo() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            if (document.exitPointerLock) document.exitPointerLock();
+            document.getElementById('game-over').style.display = 'flex';
+        }
+
+        // CENA
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.Fog(0x050505, 10, 50);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, alturaOlhos, 5);
+        camera.rotation.order = 'YXZ'; 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // ILUMINAÇÃO E CHÃO
+        const grid = new THREE.GridHelper(100, 50, 0x444444, 0x222222);
+        scene.add(grid);
+        const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+        scene.add(light);
+
+        // ARMA (Simples cubo)
+        const gun = new THREE.Mesh(
+            new THREE.BoxGeometry(0.1, 0.1, 0.5),
+            new THREE.MeshPhongMaterial({ color: 0x222222 })
+        );
+        scene.add(gun);
+
+        // ALVOS
+        function spawnTarget() {
+            const target = new THREE.Mesh(
+                new THREE.IcosahedronGeometry(0.5),
+                new THREE.MeshPhongMaterial({ color: 0xff464a })
+            );
+            target.position.set(Math.random() * 30 - 15, 1 + Math.random() * 4, Math.random() * -25 - 5);
+            scene.add(target);
+            targets.push(target);
+        }
+        for(let i=0; i<12; i++) spawnTarget();
+
+        // EVENTOS
+        const instr = document.getElementById('instructions');
+        instr.addEventListener('click', () => {
+            if(gameRunning) document.body.requestPointerLock();
+        });
+
+        document.addEventListener('pointerlockchange', () => {
+            instr.style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === document.body) {
+                camera.rotation.y -= e.movementX * 0.002;
+                let targetX = camera.rotation.x - e.movementY * 0.002;
+                camera.rotation.x = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, targetX));
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if(e.code === 'Space' && noChao) {
+                velocidadeVertical = forcaPulo;
+                noChao = false;
+            }
+        });
+        window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // DISPARO
+        window.addEventListener('mousedown', () => {
+            if (document.pointerLockElement !== document.body || !gameRunning) return;
+
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05),
+                new THREE.MeshBasicMaterial({ color: 0xffff00 })
+            );
+            
+            bullet.position.copy(camera.position);
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            bullet.userData = { direction: dir, life: 0 };
+            
+            bullets.push(bullet);
+            scene.add(bullet);
+        });
+
+        // LOOP PRINCIPAL
+        function animate() {
+            if(!gameRunning) return;
+            animationId = requestAnimationFrame(animate);
+
+            if (document.pointerLockElement === document.body) {
+                const speed = 0.15;
+                const moveDir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                moveDir.y = 0; 
+                moveDir.normalize();
+                const sideDir = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), moveDir).normalize();
+
+                if(keys['KeyW']) camera.position.addScaledVector(moveDir, speed);
+                if(keys['KeyS']) camera.position.addScaledVector(moveDir, -speed);
+                if(keys['KeyA']) camera.position.addScaledVector(sideDir, speed);
+                if(keys['KeyD']) camera.position.addScaledVector(sideDir, -speed);
+
+                camera.position.y += velocidadeVertical;
+                if (!noChao) velocidadeVertical -= gravidade;
+                if (camera.position.y <= alturaOlhos) {
+                    camera.position.y = alturaOlhos;
+                    velocidadeVertical = 0;
+                    noChao = true;
+                }
+            }
+
+            // POSICIONAR ARMA
+            gun.position.copy(camera.position);
+            gun.quaternion.copy(camera.quaternion);
+            gun.translateX(0.3);
+            gun.translateY(-0.25);
+            gun.translateZ(-0.5);
+
+            // BALAS E COLISÃO
+            for(let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.position.addScaledVector(b.userData.direction, 0.8);
+                b.userData.life++;
+
+                targets.forEach((t, tIdx) => {
+                    if(b.position.distanceTo(t.position) < 0.7) {
+                        scene.remove(t);
+                        targets.splice(tIdx, 1);
+                        score++;
+                        document.getElementById('score').innerText = score;
+                        spawnTarget();
+                    }
+                });
+
+                if(b.userData.life > 50) {
+                    scene.remove(b);
+                    bullets.splice(i, 1);
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

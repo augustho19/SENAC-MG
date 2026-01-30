@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8"><title>Ajustes</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="logo" style="margin-top:40px">LEXUS<span>GAMES</span></div>
+        <ul>
+            <li class="nav-item" onclick="location.href='index.html'"><i class="fas fa-gamepad"></i> Jogos</li>
+            <li class="nav-item active"><i class="fas fa-cog"></i> Ajustes</li>
+        </ul>
+    </nav>
+    <main class="content" id="main-content">
+        <h1>Configurações</h1>
+        <div class="card-box" style="max-width:500px; margin-top:20px; text-align:left">
+            <label>Volume Principal</label>
+            <input type="range">
+            <label>Qualidade de Vídeo</label>
+            <select><option>Alta</option><option>Baixa</option></select>
+            <button class="btn-neon" onclick="alert('Salvo!')">APLICAR</button>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
